@@ -27,6 +27,7 @@ public:
     MatrixLayout getMatrixLayout() const;
     unsigned int getRows() const;
     unsigned int getColumns() const;
+    IEEE754_t at(unsigned int, unsigned int) const;
 
     ~Matrix();
 };

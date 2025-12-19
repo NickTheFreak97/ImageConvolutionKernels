@@ -62,6 +62,16 @@ Matrix<IEEE754_t>::~Matrix() {
     delete[] this->matrix;
 }
 
+template <typename IEEE754_t>
+    requires std::is_floating_point_v<IEEE754_t>
+IEEE754_t Matrix<IEEE754_t>::at(unsigned int row, unsigned int column) const {
+    assert(row >= 0 && row < this->rows);
+    assert(column >= 0 && column < this->columns);
+
+    auto flatIndex = this->layout == ROW_MAJOR ? row * this->columns + column : row + this->rows * column;
+    return this->matrix[flatIndex];
+}
+
 // Getters
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
