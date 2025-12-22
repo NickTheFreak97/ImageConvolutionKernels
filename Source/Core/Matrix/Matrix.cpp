@@ -1,7 +1,10 @@
 #include "Matrix.h"
 
 #include <cassert>
-#include <cstring>
+#include <random>
+
+
+#include <iostream>
 
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
@@ -65,6 +68,11 @@ Matrix<IEEE754_t>::~Matrix() {
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
 IEEE754_t Matrix<IEEE754_t>::at(unsigned int row, unsigned int column) const {
+
+    if (row >= this->rows) {
+        std::cout << "Attempted to fetch row " << row << " out of " << this->rows <<  std::endl;
+    }
+
     assert(row >= 0 && row < this->rows);
     assert(column >= 0 && column < this->columns);
 
@@ -92,8 +100,32 @@ unsigned int Matrix<IEEE754_t>::getColumns() const {
     return this->columns;
 }
 
-
-
 template class Matrix<float>;
 template class Matrix<double>;
 template class Matrix<long double>;
+
+template <typename IEEE754_t>
+    requires std::is_floating_point_v<IEEE754_t>
+Matrix<IEEE754_t> Matrix<IEEE754_t>::random(unsigned int rows, unsigned int columns, MatrixLayout layout) {
+    auto randomElements = new IEEE754_t[rows * columns];
+
+    std::random_device rd;
+    std::mt19937 e2(rd());
+
+    std::uniform_real_distribution<IEEE754_t> dist(0, 100);
+    for (int i = 0; i < rows * columns; i++) {
+        randomElements[i] = dist(e2);
+    }
+
+    return Matrix<IEEE754_t>(
+        randomElements,
+        rows,
+        columns,
+        layout
+    );
+}
+
+
+template Matrix<float> Matrix<float>::random(unsigned int, unsigned int, MatrixLayout);
+template Matrix<double> Matrix<double>::random(unsigned int, unsigned int, MatrixLayout);
+template Matrix<long double> Matrix<long double>::random(unsigned int, unsigned int, MatrixLayout);

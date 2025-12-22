@@ -20,6 +20,8 @@ private:
 public:
     Matrix(const IEEE754_t* elements, unsigned int rows, unsigned int columns, MatrixLayout layout = ROW_MAJOR);
 
+    static Matrix<IEEE754_t> random(unsigned int, unsigned int, MatrixLayout layout = ROW_MAJOR);
+
     IEEE754_t* operator[](int row) const;
 
     Matrix<IEEE754_t> transposed() const;
@@ -31,5 +33,9 @@ public:
 
     ~Matrix();
 };
+
+extern template class Matrix<float>;
+extern template class Matrix<double>;
+extern template class Matrix<long double>;
 
 #endif

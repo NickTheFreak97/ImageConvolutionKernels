@@ -1,39 +1,15 @@
 #include <gtest/gtest.h>
-#include <random>
 #include  "../../Source/Core/Matrix/Matrix.h"
 #include "../../Source/Core/MatrixPaddingStrategy/MatrixPaddingStrategy.h"
 #include "../../Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h"
 #include "../../Source/Core/MatrixPaddingStrategy/Zero Padding/ZeroPaddingMatrixPaddingStrategy.h"
 
-Matrix<double> makeRandomMatrix(
-        int rows,
-        int columns,
-        MatrixLayout desiredLayout = ROW_MAJOR
-    ) {
-
-    auto randomElements = new double[rows * columns];
-
-    std::random_device rd;
-    std::mt19937 e2(rd());
-
-    std::uniform_real_distribution<> dist(0, 100);
-    for (int i = 0; i < rows * columns; i++) {
-        randomElements[i] = dist(e2);
-    }
-
-    return Matrix(
-        randomElements,
-        rows,
-        columns,
-        desiredLayout
-    );
-}
 
 TEST(MatrixTest, Transposition) {
     auto rows = rand() % 100 + 1;
     auto columns = rand() % 100 + 1;
 
-    auto rowMajorMatrix = makeRandomMatrix(rows, columns);
+    auto rowMajorMatrix = Matrix<double>::random(rows, columns);
 
     auto itsTranspose = rowMajorMatrix.transposed();
     for (int i=0; i < rows; i++) {
@@ -47,7 +23,7 @@ TEST(MatrixTest, AtFunction) {
     auto rows = rand() % 100 + 1;
     auto columns = rand() % 100 + 1;
 
-    auto rowMajorMatrix = makeRandomMatrix(rows, columns, COLUMN_MAJOR);
+    auto rowMajorMatrix =  Matrix<double>::random(rows, columns, COLUMN_MAJOR);
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < columns; j++) {
@@ -62,7 +38,7 @@ TEST(MatrixTest, ZeroPadding) {
     auto rows = rand() % 100 + 1;
     auto columns = rand() % 100 + 1;
 
-    auto rowMajorMatrix = makeRandomMatrix(rows, columns, COLUMN_MAJOR);
+    auto rowMajorMatrix = Matrix<double>::random(rows, columns, COLUMN_MAJOR);
 
     for (int i = 0; i < 100; i++) {
         auto randomRowIndex = rand() % 400 - 200;
@@ -94,7 +70,7 @@ TEST(MatrixTest, ZeroPadding) {
 TEST(MatrixTest, MirroringPadding) {
     MatrixPaddingStrategy<double>* strategy = new PeriodicExtensionMatrixPaddingStrategy<double>();
 
-    auto rowMajorMatrix = makeRandomMatrix(3, 3, COLUMN_MAJOR);
+    auto rowMajorMatrix = Matrix<double>::random(3, 3, COLUMN_MAJOR);
 
     for ( int i = 0; i < 3; i ++) {
         for ( int j = 0; j < 3; j++ ) {

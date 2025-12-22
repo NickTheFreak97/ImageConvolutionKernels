@@ -34,11 +34,13 @@ add_executable(
         Source/Core/Matrix/Matrix.cpp
         Source/Core/Matrix/Matrix.h
         Testing/Matrix/testMatrix.cpp
+        Testing/Matrix/testMatrixPadding.cpp
         Source/Core/MatrixPaddingStrategy/MatrixPaddingStrategy.h
         "Source/Core/MatrixPaddingStrategy/Zero Padding/ZeroPaddingMatrixPaddingStrategy.cpp"
         "Source/Core/MatrixPaddingStrategy/Zero Padding/ZeroPaddingMatrixPaddingStrategy.h"
         Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.cpp
         Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h
+        Testing/Matrix/testMatrixPadding.cpp
 )
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main)
