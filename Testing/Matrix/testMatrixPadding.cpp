@@ -42,8 +42,6 @@ TEST(periodicExtensionPadding, northernBoundaryExtension) {
 
     auto randomMatrix = Matrix<double>::random(randomRows, randomColumns);
 
-    std::cout << "Generated M(" << randomRows << "x" << randomColumns << ")" << std::endl;
-
     for ( int k = 0; k < 50'000; k ++) {
         auto someRandomRow = round(dist(rd));
         auto numberOfRepetition = floor(-someRandomRow / static_cast<double>(randomRows));
@@ -65,5 +63,77 @@ TEST(periodicExtensionPadding, northernBoundaryExtension) {
 
     for (int j = 0; j < randomColumns; j++) {
         EXPECT_DOUBLE_EQ(strategy->pad(randomMatrix, -1, j), randomMatrix.at(0, j));
+    }
+}
+
+TEST(periodicExtensionPadding, NorthernBoundPeriodicity) {
+    // Starting from index 0, the periodic extension padding is expected to be vertically periodic, with period equal to twice the number of columns of the matrix.
+    // That is, given a random k∈ℕ, and a matrix A ∈ Matrix(ℝ, r * c) the padding is periodic with period 2kc on the northern boundary.
+
+    MatrixPaddingStrategy<double>* strategy = new PeriodicExtensionMatrixPaddingStrategy<double>();
+
+    std::random_device rd;
+    std::uniform_int_distribution urdForMatrixSize(10, 100);
+
+    auto randomRows = urdForMatrixSize(rd);
+    auto randomColumns = urdForMatrixSize(rd);
+
+    auto randomMatrix = Matrix<double>::random(randomRows, randomColumns);
+
+    std::uniform_int_distribution urdForRandomRow(0, randomRows - 1);
+    auto randomRowIndex = urdForRandomRow(rd);
+
+    for ( int k = 0; k < 5'000; k++) {
+        std::uniform_int_distribution urdForRandomPeriod(1, std::numeric_limits<int>::max() / (2 * randomRows) - 1);
+        auto randomPeriod = urdForRandomPeriod(rd);
+
+        for (int j = 0; j < randomColumns; j++) {
+            EXPECT_DOUBLE_EQ(
+                randomMatrix.at(randomRowIndex, j),
+                strategy->pad(
+                    randomMatrix,
+                    randomRowIndex - 2*randomRows*randomPeriod,
+                    j
+                )
+            );
+        }
+    }
+}
+
+
+
+TEST(periodicExtensionPadding, NorthernBoundContinuity) {
+    // The extension is supposed to be continuous at the northern boundaries.
+    // That is, given a random k∈ℕ, and a matrix A ∈ Matrix(ℝ, r * c) the padding's rows at indices 2kc and 2kc + 1 must be the same vector.
+
+    MatrixPaddingStrategy<double>* strategy = new PeriodicExtensionMatrixPaddingStrategy<double>();
+
+    std::random_device rd;
+    std::uniform_int_distribution urdForMatrixSize(10, 100);
+
+    auto randomRows = urdForMatrixSize(rd);
+    auto randomColumns = urdForMatrixSize(rd);
+
+    auto randomMatrix = Matrix<double>::random(randomRows, randomColumns);
+
+    for ( int k = 0; k < 5'000; k++) {
+        std::uniform_int_distribution urdForRandomPeriod(1, std::numeric_limits<int>::max() / (2 * randomRows) - 1);
+        auto randomPeriod = urdForRandomPeriod(rd);
+
+        for (int j = 0; j < randomColumns; j++) {
+            EXPECT_DOUBLE_EQ(
+                strategy->pad(
+                    randomMatrix,
+                    -2*randomRows*randomPeriod,
+                    j
+                ),
+
+                strategy->pad(
+                    randomMatrix,
+                    -2*randomRows*randomPeriod - 1,
+                    j
+                )
+            );
+        }
     }
 }
