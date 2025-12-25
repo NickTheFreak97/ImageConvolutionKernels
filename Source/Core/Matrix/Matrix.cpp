@@ -68,11 +68,6 @@ Matrix<IEEE754_t>::~Matrix() {
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
 IEEE754_t Matrix<IEEE754_t>::at(unsigned int row, unsigned int column) const {
-
-    if (row >= this->rows) {
-        std::cout << "Attempted to fetch row " << row << " out of " << this->rows <<  std::endl;
-    }
-
     assert(row >= 0 && row < this->rows);
     assert(column >= 0 && column < this->columns);
 
