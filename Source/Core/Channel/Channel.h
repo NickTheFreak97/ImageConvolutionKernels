@@ -16,8 +16,8 @@ public:
     Channel(unsigned int maxValue, const IEEE754_t* elements, unsigned int rows, unsigned int columns, MatrixLayout layout = ROW_MAJOR);
     Channel(unsigned int maxValue, const Matrix<IEEE754_t>* channelValues);
 
-    unsigned int getMaxTheoreticalValue() const;
-    Channel* normalized() const;
+    [[nodiscard]] unsigned int getMaxTheoreticalValue() const;
+    [[nodiscard]] Channel* normalized() const;
 
 };
 

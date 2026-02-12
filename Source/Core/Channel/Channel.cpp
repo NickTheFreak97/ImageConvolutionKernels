@@ -19,21 +19,23 @@ template <typename IEEE754_t> requires std::is_floating_point_v <IEEE754_t>
         unsigned int maxValue,
         const Matrix < IEEE754_t > * channelValues): Matrix <IEEE754_t> (
         [channelValues]() {
-            auto deepCopyOfChannelValues = new IEEE754_t[channelValues -> rows * channelValues -> columns];
-            for (int i = 0; i < channelValues -> rows; i++) {
-                for (int j = 0; j < channelValues -> columns; j++) {
+            assert(channelValues != nullptr);
+
+            auto deepCopyOfChannelValues = new IEEE754_t[channelValues -> getRows() * channelValues -> getColumns()];
+            for (int i = 0; i < channelValues -> getRows(); i++) {
+                for (int j = 0; j < channelValues -> getColumns(); j++) {
                     if (channelValues->getMatrixLayout() == ROW_MAJOR) {
-                        deepCopyOfChannelValues[i * channelValues -> columns + j] = channelValues -> at(i, j);
+                        deepCopyOfChannelValues[i * channelValues -> getColumns() + j] = channelValues -> at(i, j);
                     } else {
-                        deepCopyOfChannelValues[i + channelValues->rows * j] = channelValues -> at(i, j);
+                        deepCopyOfChannelValues[i + channelValues->getColumns() * j] = channelValues -> at(i, j);
                     }
                 }
             }
             return deepCopyOfChannelValues;
         }(),
-        channelValues -> rows,
-        channelValues -> columns,
-        channelValues -> getLayout()
+        channelValues -> getRows(),
+        channelValues -> getColumns(),
+        channelValues -> getMatrixLayout()
     ),
     maxTheoreticalValue(maxValue) {
     assert(this->isWithinMaxThreshold());
@@ -42,8 +44,8 @@ template <typename IEEE754_t> requires std::is_floating_point_v <IEEE754_t>
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 bool Channel<IEEE754_t>::isWithinMaxThreshold() {
     auto max = this->at(0, 0);
-    for (int i = 0; i < this->rows; i++) {
-        for (int j = 0; j < this->columns; j++) {
+    for (int i = 0; i < this->getRows(); i++) {
+        for (int j = 0; j < this->getColumns(); j++) {
             auto currentElement = this->at(i, j);
             if ( max > currentElement) {
                 max = currentElement;
@@ -62,14 +64,14 @@ unsigned int Channel<IEEE754_t>::getMaxTheoreticalValue() const {
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 Channel<IEEE754_t>* Channel<IEEE754_t>::normalized() const {
-    auto normalizedChannelValues = new IEEE754_t[this->rows * this->columns];
+    auto normalizedChannelValues = new IEEE754_t[this->getRows() * this->getColumns()];
 
-    for (int i = 0; i < this->rows; i++) {
-        for (int j = 0; j < this->columns; j++) {
-            if (this->layout == ROW_MAJOR) {
-                normalizedChannelValues[i * this -> columns + j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
+    for (int i = 0; i < this->getRows(); i++) {
+        for (int j = 0; j < this->getColumns(); j++) {
+            if (this->getMatrixLayout() == ROW_MAJOR) {
+                normalizedChannelValues[i * this -> getColumns() + j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
             } else {
-                normalizedChannelValues[i + this->rows * j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
+                normalizedChannelValues[i + this->getRows() * j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
             }
         }
     }
@@ -77,9 +79,13 @@ Channel<IEEE754_t>* Channel<IEEE754_t>::normalized() const {
     return new Channel<IEEE754_t>(
         1,
         normalizedChannelValues,
-        this->rows,
-        this->columns,
-        this->layout
+        this->getRows(),
+        this->getColumns(),
+        this->getMatrixLayout()
     );
 }
 
+
+template class Channel<float>;
+template class Channel<double>;
+template class Channel<long double>;

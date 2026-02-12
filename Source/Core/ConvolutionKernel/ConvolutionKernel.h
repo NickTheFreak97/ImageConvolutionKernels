@@ -7,9 +7,11 @@
 
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
-class ConvolutionKernel : Matrix<IEEE754_t> {
+class ConvolutionKernel : public Matrix<IEEE754_t> {
     public:
     ConvolutionKernel(const IEEE754_t* elements, unsigned int rows, unsigned int columns, MatrixLayout layout = ROW_MAJOR);
+    explicit ConvolutionKernel(const Matrix<IEEE754_t>* fromMatrix);
+
 
     int getCentralRowIndex();
     int getCentralColumnIndex();

@@ -110,3 +110,33 @@ TEST(ConvolutionKernelTests, LowerAndUpperBoundsEvenSizeKernel) {
     EXPECT_EQ(gaussianBlur->getUpperBoundRowIndex(), 1);
     EXPECT_EQ(gaussianBlur->getUpperBoundRowIndex() - gaussianBlur->getLowerBoundRowIndex() + 1, 4);
 }
+
+
+TEST(ConvolutionKernelFromMatrix, MatrixConstructor) {
+    ASSERT_DEATH(new ConvolutionKernel<float>(nullptr), ".*");
+
+    float gaussianBlurKernelValues[36] = {
+        0.0019f, 0.0050f, 0.0095f, 0.0131f, 0.0131f, 0.0095f,
+        0.0050f, 0.0131f, 0.0248f, 0.0342f, 0.0342f, 0.0248f,
+        0.0095f, 0.0248f, 0.0469f, 0.0647f, 0.0647f, 0.0469f,
+        0.0131f, 0.0342f, 0.0647f, 0.0893f, 0.0893f, 0.0647f,
+        0.0131f, 0.0342f, 0.0647f, 0.0893f, 0.0893f, 0.0647f,
+        0.0095f, 0.0248f, 0.0469f, 0.0647f, 0.0647f, 0.0469f
+    };
+
+    auto matrixOfKernelValues = new Matrix<float>(
+        gaussianBlurKernelValues,
+        6,
+        6,
+        ROW_MAJOR
+    );
+
+    auto kernelOfMatrix = new ConvolutionKernel(matrixOfKernelValues);
+
+    for (int i = 0; i < 6; i++) {
+        for( int j = 0; j < 6; j++) {
+            EXPECT_FLOAT_EQ(kernelOfMatrix->at(i, j), gaussianBlurKernelValues[i * 6 + j]);
+            EXPECT_FLOAT_EQ(kernelOfMatrix->at(i, j), matrixOfKernelValues->at(i, j));
+        }
+    }
+}

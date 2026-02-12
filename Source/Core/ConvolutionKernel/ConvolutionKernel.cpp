@@ -5,11 +5,39 @@
 #include "ConvolutionKernel.h"
 
 #include <cmath>
-#include <sys/stat.h>
+#include <cassert>
 
 template <typename IEEE754_t>
     requires std::is_floating_point_v<IEEE754_t>
 ConvolutionKernel<IEEE754_t>::ConvolutionKernel(const IEEE754_t *elements, unsigned int rows, unsigned int columns, MatrixLayout layout) : Matrix<IEEE754_t>(elements, rows, columns, layout) {
+
+}
+
+
+template <typename IEEE754_t>
+    requires std::is_floating_point_v<IEEE754_t>
+ConvolutionKernel<IEEE754_t>::ConvolutionKernel(const Matrix<IEEE754_t>* fromMatrix) : Matrix<IEEE754_t>(
+    [fromMatrix] {
+        assert(fromMatrix != nullptr);
+
+        auto deepCopy = new IEEE754_t[fromMatrix->getRows() * fromMatrix->getColumns()];
+
+        for (int i = 0; i < fromMatrix->getRows(); i++) {
+            for (int j = 0; j < fromMatrix->getColumns(); j++) {
+                if (fromMatrix->getMatrixLayout() == ROW_MAJOR) {
+                    deepCopy[i * fromMatrix -> getRows() + j] = fromMatrix -> at(i, j);
+                } else {
+                    deepCopy[i + fromMatrix->getColumns() * j] = fromMatrix -> at(i, j);
+                }
+            }
+        }
+
+        return deepCopy;
+    }(),
+    fromMatrix->getRows(),
+    fromMatrix->getColumns(),
+    fromMatrix->getMatrixLayout()
+) {
 
 }
 

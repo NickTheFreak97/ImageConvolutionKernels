@@ -50,6 +50,8 @@ add_executable(
         Source/Core/Channel/Channel.cpp
         Source/Core/Channel/Channel.h
         Testing/Image/testConvolutionKernel.cpp
+        Testing/Image/testImageChannels.cpp
+        Testing/Image/testImageChannels.cpp
 )
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main)
