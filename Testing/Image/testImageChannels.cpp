@@ -97,4 +97,10 @@ TEST(ImageChannel, OutputPixelForKernel) {
         }
     }
 
+    auto sameChannel = channel->filtered(identityKernel, paddingStrategy);
+    for (int i = 0; i < 256; i++) {
+        for (int j = 0; j < 256; j++) {
+            EXPECT_FLOAT_EQ(sameChannel->at(i, j), channel->at(i, j));
+        }
+    }
 }

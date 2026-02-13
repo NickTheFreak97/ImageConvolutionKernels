@@ -1,0 +1,30 @@
+#ifndef IMAGECONVOLUTIONKERNEL_IMAGE_H
+#define IMAGECONVOLUTIONKERNEL_IMAGE_H
+
+#include <type_traits>
+#include <vector>
+#include <initializer_list>
+
+#include "../Channel/Channel.h"
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+class Image {
+private:
+    unsigned int width;
+    unsigned int height;
+    std::vector<Channel<IEEE754_t>*> channels;
+
+public:
+    Image(unsigned int width, unsigned int height, std::initializer_list<Channel<IEEE754_t>*> channels);
+    Image(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t>*> channels);
+    ~Image();
+
+    Image* filtered(const ConvolutionKernel<IEEE754_t>* usingKernel, const MatrixPaddingStrategy<IEEE754_t>* withPaddingStrategy) const;
+
+    [[nodiscard]] unsigned int getWidth() const;
+    [[nodiscard]] unsigned int getHeight() const;
+    [[nodiscard]] unsigned int getChannelCount() const;
+    Channel<IEEE754_t>* getChannel(unsigned int channelIndex) const;
+};
+
+#endif

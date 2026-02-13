@@ -29,12 +29,10 @@ public:
 
     [[nodiscard]] unsigned int getMaxTheoreticalValue() const;
     [[nodiscard]] Channel* normalized() const;
-    Channel* clamped(IEEE754_t min, IEEE754_t max) const;
+    [[nodiscard]] Channel* clamped(IEEE754_t min, IEEE754_t max) const;
+    Channel* filtered(const ConvolutionKernel<IEEE754_t>* usingKernel, const MatrixPaddingStrategy<IEEE754_t>* withPaddingStrategy) const;
+
 
 };
-
-extern template class Channel<float>;
-extern template class Channel<double>;
-extern template class Channel<long double>;
 
 #endif

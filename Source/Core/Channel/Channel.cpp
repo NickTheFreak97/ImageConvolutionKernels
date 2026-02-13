@@ -1,5 +1,6 @@
 #include "Channel.h"
 #include <cassert>
+#include <cmath>
 
 template < typename IEEE754_t > requires std::is_floating_point_v <IEEE754_t>
     Channel < IEEE754_t > ::Channel(
@@ -154,6 +155,30 @@ IEEE754_t Channel<IEEE754_t>::outputPixel(unsigned int row, unsigned int column,
     }
 
     return accumulatedFilterValue;
+}
+
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+Channel<IEEE754_t> *Channel<IEEE754_t>::filtered(const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *withPaddingStrategy) const {
+    auto filteredElements = new IEEE754_t[this->getRows() * this->getColumns()];
+
+    for (int i = 0; i < this->getRows(); i++) {
+        for (int j = 0; j < this->getColumns(); j++) {
+            auto filteredChannelValue = round(this->outputPixel(i, j, usingKernel, withPaddingStrategy));
+
+            if (this->getMatrixLayout() == ROW_MAJOR) {
+                filteredElements[i * this->getColumns() + j] = filteredChannelValue;
+            } else {
+                filteredElements[i + this->getRows() * j] = filteredChannelValue;
+            }
+        }
+    }
+
+    auto filteredChannel = new Channel<IEEE754_t>(this->getMaxTheoreticalValue(), filteredElements, this->getRows(), this->getColumns(), this->getMatrixLayout());
+
+    // Apparently normalizing and rescaling to fit [0, maxValue] is not the way as it doesn't preserve brightness relationships between pixels.
+    // Well known projects such as OpenCV use clamping instead. This strategy is known as saturate_cast.
+    return filteredChannel->clamped(0, this->getMaxTheoreticalValue());
 }
 
 

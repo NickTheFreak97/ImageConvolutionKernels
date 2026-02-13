@@ -24,8 +24,4 @@ class ConvolutionKernel : public Matrix<IEEE754_t> {
     IEEE754_t getValue(int row, int column) const;
 };
 
-extern template class Matrix<float>;
-extern template class Matrix<double>;
-extern template class Matrix<long double>;
-
 #endif

@@ -32,6 +32,8 @@ add_executable(
         Source/Core/ConvolutionKernel/Kernels/AverageKernel.cpp
         Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp
         Source/Core/ConvolutionKernel/Kernels/Identity.cpp
+        Source/Core/Image/Image.cpp
+        Source/Core/Image/Image.h
 )
 
 target_link_libraries(ImageConvolutionKernel PRIVATE gtest gtest_main)
@@ -40,9 +42,6 @@ add_executable(
         tests
         Source/Core/Matrix/Matrix.cpp
         Source/Core/Matrix/Matrix.h
-        Testing/Matrix/testMatrix.cpp
-        Testing/Matrix/testMatrixPadding.cpp
-        Testing/Image/testConvolutionKernel.cpp
         Source/Core/MatrixPaddingStrategy/MatrixPaddingStrategy.h
         "Source/Core/MatrixPaddingStrategy/Zero Padding/ZeroPaddingMatrixPaddingStrategy.cpp"
         "Source/Core/MatrixPaddingStrategy/Zero Padding/ZeroPaddingMatrixPaddingStrategy.h"
@@ -52,9 +51,14 @@ add_executable(
         Source/Core/ConvolutionKernel/ConvolutionKernel.h
         Source/Core/Channel/Channel.cpp
         Source/Core/Channel/Channel.h
+        Source/Core/Image/Image.cpp
+        Source/Core/Image/Image.h
+        Testing/Matrix/testMatrix.cpp
+        Testing/Matrix/testMatrixPadding.cpp
         Testing/Image/testConvolutionKernel.cpp
         Testing/Image/testImageChannels.cpp
         Testing/Image/testImageChannels.cpp
+        Testing/Image/testImage.cpp
 )
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main)
