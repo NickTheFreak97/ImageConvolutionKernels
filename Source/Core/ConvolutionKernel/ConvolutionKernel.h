@@ -13,14 +13,18 @@ class ConvolutionKernel : public Matrix<IEEE754_t> {
     explicit ConvolutionKernel(const Matrix<IEEE754_t>* fromMatrix);
 
 
-    int getCentralRowIndex();
-    int getCentralColumnIndex();
+    [[nodiscard]] int getCentralRowIndex() const;
+    [[nodiscard]] int getCentralColumnIndex() const;
 
-    int getLowerBoundRowIndex();
-    int getUpperBoundRowIndex();
+    [[nodiscard]] int getLowerBoundRowIndex() const;
+    [[nodiscard]] int getUpperBoundRowIndex() const;
 
-    int getLowerBoundColumnIndex();
-    int getUpperBoundColumnIndex();
+    [[nodiscard]] int getLowerBoundColumnIndex() const;
+    [[nodiscard]] int getUpperBoundColumnIndex() const;
+
+    IEEE754_t getValue(int row, int column) const;
+
+    static ConvolutionKernel* averageKernel(unsigned int size);
 };
 
 extern template class Matrix<float>;

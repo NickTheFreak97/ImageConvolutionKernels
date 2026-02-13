@@ -86,6 +86,29 @@ Channel<IEEE754_t>* Channel<IEEE754_t>::normalized() const {
 }
 
 
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+IEEE754_t Channel<IEEE754_t>::outputPixel(unsigned int row, unsigned int column, const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *paddingStrategy) const {
+    assert(usingKernel != nullptr);
+    assert(paddingStrategy != nullptr);
+    assert(row < this->getRows());
+    assert(column < this->getColumns());
+
+    IEEE754_t accumulatedFilterValue = 0;
+
+    for (int i = usingKernel->getLowerBoundRowIndex(); i <= usingKernel->getUpperBoundRowIndex(); i++) {
+        for (int j = usingKernel->getLowerBoundColumnIndex(); j <= usingKernel->getUpperBoundColumnIndex(); j++) {
+            auto currentChannelElementRow = row + i;
+            auto currentChannelElementColumn = column + j;
+
+            accumulatedFilterValue += paddingStrategy->pad(*this, currentChannelElementRow, currentChannelElementColumn) * usingKernel->getValue(i, j);
+        }
+    }
+
+    return accumulatedFilterValue;
+}
+
+
 template class Channel<float>;
 template class Channel<double>;
 template class Channel<long double>;

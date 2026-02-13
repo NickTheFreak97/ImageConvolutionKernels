@@ -1,7 +1,3 @@
-//
-// Created by Niccolo Della Rocca on 07/02/26.
-//
-
 #include "ConvolutionKernel.h"
 
 #include <cmath>
@@ -47,7 +43,7 @@ ConvolutionKernel<IEEE754_t>::ConvolutionKernel(const Matrix<IEEE754_t>* fromMat
  * - If the number of rows is even, the central row index is conventionally selected as `ceil((rowsCount-1)/2)`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getCentralRowIndex() {
+int ConvolutionKernel<IEEE754_t>::getCentralRowIndex() const {
     auto rows = static_cast<int>(this->getRows());
 
     return rows % 2 == 0 ? static_cast<int>(ceil(static_cast<float>(rows - 1) / 2)) : rows / 2;
@@ -59,7 +55,7 @@ int ConvolutionKernel<IEEE754_t>::getCentralRowIndex() {
  * - If the number of columns is even, the central column index is conventionally selected as `ceil((columnsCount-1)/2)`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getCentralColumnIndex() {
+int ConvolutionKernel<IEEE754_t>::getCentralColumnIndex() const {
     auto columns = static_cast<int>(this->getColumns());
     return columns % 2 == 0 ? static_cast<int>(ceil(static_cast<float>(columns - 1) / 2)) : columns / 2;
 }
@@ -70,7 +66,7 @@ int ConvolutionKernel<IEEE754_t>::getCentralColumnIndex() {
  * - If the number of columns is even, the greatest distance on the left from the central row element is `-ceil((rowsCount - 1) / 2)`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getLowerBoundRowIndex() {
+int ConvolutionKernel<IEEE754_t>::getLowerBoundRowIndex() const {
     auto rows = static_cast<int>(this->getRows());
 
     return rows % 2 == 0 ? -static_cast<int>(ceil(static_cast<float>(rows - 1) / 2)) : -(rows - 1) / 2;
@@ -82,7 +78,7 @@ int ConvolutionKernel<IEEE754_t>::getLowerBoundRowIndex() {
  * - If the number of rows is even, the greatest distance on the left from the central row element is `ceil((rowsCount - 1) / 2) - 1`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getUpperBoundRowIndex() {
+int ConvolutionKernel<IEEE754_t>::getUpperBoundRowIndex() const {
     auto rows = static_cast<int>(this->getRows());
 
     return rows % 2 == 0 ? static_cast<int>(ceil(static_cast<float>(rows - 1) / 2)) - 1 : (rows - 1) / 2;
@@ -95,7 +91,7 @@ int ConvolutionKernel<IEEE754_t>::getUpperBoundRowIndex() {
  * - If the number of columns is even, the greatest distance on the left from the central column element is `-ceil((columnsCount - 1) / 2)`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getLowerBoundColumnIndex() {
+int ConvolutionKernel<IEEE754_t>::getLowerBoundColumnIndex() const {
     auto columns = static_cast<int>(this->getColumns());
 
     return columns % 2 == 0 ? -static_cast<int>(ceil(static_cast<float>(columns - 1) / 2)) : -(columns - 1) / 2;
@@ -107,10 +103,38 @@ int ConvolutionKernel<IEEE754_t>::getLowerBoundColumnIndex() {
  * - If the number of columns is even, the greatest distance on the left from the central column element is `ceil((columnsCount - 1) / 2) - 1`
  */
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-int ConvolutionKernel<IEEE754_t>::getUpperBoundColumnIndex() {
+int ConvolutionKernel<IEEE754_t>::getUpperBoundColumnIndex() const {
     auto columns = static_cast<int>(this->getColumns());
 
     return columns % 2 == 0 ? static_cast<int>(ceil(static_cast<float>(columns - 1) / 2)) - 1 : (columns - 1) / 2;
+}
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+ConvolutionKernel<IEEE754_t> *ConvolutionKernel<IEEE754_t>::averageKernel(unsigned int size) {
+    auto elements = new IEEE754_t[size * size];
+
+    for (int i = 0; i < size * size; i++) {
+        elements[i] = 1.0/(size * size);
+    }
+
+    return new ConvolutionKernel(elements, size, size, ROW_MAJOR);
+}
+
+/*
+ * Returns the value of the kernel with respect to the specified `row` and `column` indices.
+ * - Parameter row: An index s.t. the central row element of the kernel has index 0.
+ * - Parameter column: An index s.t. the central column element of the kernel has index 0.
+ * - Returns: The output of the kernel at the specified remapped indices.
+ */
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+IEEE754_t ConvolutionKernel<IEEE754_t>::getValue(int row, int column) const {
+    assert(row >= this->getLowerBoundRowIndex() && row <= this->getUpperBoundRowIndex());
+    assert(column >= this->getLowerBoundColumnIndex() && column <= this->getUpperBoundColumnIndex());
+
+    auto mappedRowIndex = row + this->getCentralRowIndex();
+    auto mappedColumnIndex = column + this->getCentralColumnIndex();
+
+    return this->at(mappedRowIndex, mappedColumnIndex);
 }
 
 
