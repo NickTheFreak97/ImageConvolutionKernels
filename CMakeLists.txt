@@ -29,6 +29,9 @@ add_executable(
         Source/Core/ConvolutionKernel/ConvolutionKernel.h
         Source/Core/Channel/Channel.cpp
         Source/Core/Channel/Channel.h
+        Source/Core/ConvolutionKernel/Kernels/AverageKernel.cpp
+        Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp
+        Source/Core/ConvolutionKernel/Kernels/Identity.cpp
 )
 
 target_link_libraries(ImageConvolutionKernel PRIVATE gtest gtest_main)

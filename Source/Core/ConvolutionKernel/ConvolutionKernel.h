@@ -12,7 +12,6 @@ class ConvolutionKernel : public Matrix<IEEE754_t> {
     ConvolutionKernel(const IEEE754_t* elements, unsigned int rows, unsigned int columns, MatrixLayout layout = ROW_MAJOR);
     explicit ConvolutionKernel(const Matrix<IEEE754_t>* fromMatrix);
 
-
     [[nodiscard]] int getCentralRowIndex() const;
     [[nodiscard]] int getCentralColumnIndex() const;
 
@@ -23,9 +22,6 @@ class ConvolutionKernel : public Matrix<IEEE754_t> {
     [[nodiscard]] int getUpperBoundColumnIndex() const;
 
     IEEE754_t getValue(int row, int column) const;
-
-    static ConvolutionKernel* averageKernel(unsigned int size);
-    static ConvolutionKernel* gaussianKernel(unsigned int size, IEEE754_t sigma);
 };
 
 extern template class Matrix<float>;

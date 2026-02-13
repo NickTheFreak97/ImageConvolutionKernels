@@ -1,6 +1,7 @@
 #include <random>
 #include <gtest/gtest.h>
 #include  "../../Source/Core/ConvolutionKernel/ConvolutionKernel.h"
+#include "../../Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp"
 
 
 TEST(ConvolutionKernelTests, CentralIndexOddRowMajor) {
@@ -148,12 +149,12 @@ TEST(ConvolutionKernelTests, GaussianOddSize) {
     auto uidForKernelSize = std::uniform_int_distribution(3, 15);
     auto randomKernelSize = 2 * uidForKernelSize(rd) + 1;
 
-    auto gaussianBlur = ConvolutionKernel<float>::gaussianKernel(randomKernelSize, static_cast<float>(randomKernelSize - 1.0) / 6.0);
+    auto gaussianBlur = Kernels::gaussianKernel<float>(randomKernelSize, (static_cast<float>(randomKernelSize) -  1.0f) / 6.0f);
     auto rowOfMax = 0;
     auto columnOfMax = 0;
 
     auto maxValue = gaussianBlur->at(0, 0);
-    auto sumOfKernelValues = 0;
+    auto sumOfKernelValues = 0.0f;
 
     for (auto i = 0; i < randomKernelSize; i++) {
         for (int j = 0; j < randomKernelSize; j++) {
@@ -173,7 +174,13 @@ TEST(ConvolutionKernelTests, GaussianOddSize) {
 
     EXPECT_EQ(rowOfMax, (randomKernelSize - 1) / 2);
     EXPECT_EQ(columnOfMax, (randomKernelSize - 1) / 2);
-    EXPECT_EQ(sumOfKernelValues, 1.0);
+
+    auto eps = 1.0;
+    while (1.0f + eps > 1.0f) {
+        eps = eps / 2.0f;
+    }
+
+    EXPECT_LE(abs(sumOfKernelValues - 1.0f), pow(eps, 1.0f/3.0f));
 
     for (auto i = 0; i < randomKernelSize; i++) {
         for (int j = 0; j < randomKernelSize; j++) {
