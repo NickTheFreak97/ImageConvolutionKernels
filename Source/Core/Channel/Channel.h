@@ -29,6 +29,7 @@ public:
 
     [[nodiscard]] unsigned int getMaxTheoreticalValue() const;
     [[nodiscard]] Channel* normalized() const;
+    Channel* clamped(IEEE754_t min, IEEE754_t max) const;
 
 };
 

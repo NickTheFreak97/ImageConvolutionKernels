@@ -25,6 +25,7 @@ class ConvolutionKernel : public Matrix<IEEE754_t> {
     IEEE754_t getValue(int row, int column) const;
 
     static ConvolutionKernel* averageKernel(unsigned int size);
+    static ConvolutionKernel* gaussianKernel(unsigned int size, IEEE754_t sigma);
 };
 
 extern template class Matrix<float>;

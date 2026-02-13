@@ -28,6 +28,30 @@ TEST(ImageChannel, isWithinThreshold) {
     EXPECT_TRUE(normalizedChannel->getMaxTheoreticalValue() == 1);
 }
 
+TEST(ImageChannel, TestClamp) {
+    auto matrix = new Matrix(
+        mockImageRChannel,
+        256,
+        256,
+        ROW_MAJOR
+    );
+
+    auto rd = std::random_device();
+    auto uniformRangeDistribution = std::uniform_int_distribution(0, 255);
+    auto randomBound = static_cast<float>(uniformRangeDistribution(rd));
+    auto otherRandomBound = static_cast<float>(uniformRangeDistribution(rd));
+
+    auto channel = Channel(255, matrix);
+    auto clampedChannel = channel.clamped(std::min(randomBound, otherRandomBound), std::max(randomBound, otherRandomBound));
+
+    for (int i = 0; i < clampedChannel->getRows(); i++) {
+        for (int j = 0; j < clampedChannel->getColumns(); j++) {
+            auto ijElement = clampedChannel->at(i, j);
+            EXPECT_TRUE(ijElement >= std::min(randomBound, otherRandomBound) && ijElement <= std::max(randomBound, otherRandomBound));
+        }
+    }
+}
+
 TEST(ImageChannel, OutputPixelForKernel) {
     auto matrix = new Matrix<float>(
         mockImageRChannel,

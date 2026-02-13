@@ -1,3 +1,4 @@
+#include <random>
 #include <gtest/gtest.h>
 #include  "../../Source/Core/ConvolutionKernel/ConvolutionKernel.h"
 
@@ -112,7 +113,7 @@ TEST(ConvolutionKernelTests, LowerAndUpperBoundsEvenSizeKernel) {
 }
 
 
-TEST(ConvolutionKernelFromMatrix, MatrixConstructor) {
+TEST(ConvolutionKernelTests, MatrixConstructor) {
     ASSERT_DEATH(new ConvolutionKernel<float>(nullptr), ".*");
 
     float gaussianBlurKernelValues[36] = {
@@ -137,6 +138,49 @@ TEST(ConvolutionKernelFromMatrix, MatrixConstructor) {
         for( int j = 0; j < 6; j++) {
             EXPECT_FLOAT_EQ(kernelOfMatrix->at(i, j), gaussianBlurKernelValues[i * 6 + j]);
             EXPECT_FLOAT_EQ(kernelOfMatrix->at(i, j), matrixOfKernelValues->at(i, j));
+        }
+    }
+}
+
+
+TEST(ConvolutionKernelTests, GaussianOddSize) {
+    auto rd = std::random_device();
+    auto uidForKernelSize = std::uniform_int_distribution(3, 15);
+    auto randomKernelSize = 2 * uidForKernelSize(rd) + 1;
+
+    auto gaussianBlur = ConvolutionKernel<float>::gaussianKernel(randomKernelSize, static_cast<float>(randomKernelSize - 1.0) / 6.0);
+    auto rowOfMax = 0;
+    auto columnOfMax = 0;
+
+    auto maxValue = gaussianBlur->at(0, 0);
+    auto sumOfKernelValues = 0;
+
+    for (auto i = 0; i < randomKernelSize; i++) {
+        for (int j = 0; j < randomKernelSize; j++) {
+
+            auto currentValue = gaussianBlur->at(i, j);
+            sumOfKernelValues += currentValue;
+
+            if (currentValue > maxValue) {
+                maxValue = currentValue;
+                rowOfMax = i;
+                columnOfMax = j;
+            }
+
+            EXPECT_FLOAT_EQ(gaussianBlur->at(i, j), gaussianBlur->at(j, i));
+        }
+    }
+
+    EXPECT_EQ(rowOfMax, (randomKernelSize - 1) / 2);
+    EXPECT_EQ(columnOfMax, (randomKernelSize - 1) / 2);
+    EXPECT_EQ(sumOfKernelValues, 1.0);
+
+    for (auto i = 0; i < randomKernelSize; i++) {
+        for (int j = 0; j < randomKernelSize; j++) {
+            auto distanceFromMidRow = abs(j - (randomKernelSize - 1) / 2);
+            auto distanceFromMidColumn = abs(i - (randomKernelSize - 1) / 2);
+            EXPECT_FLOAT_EQ(gaussianBlur->at(i, (randomKernelSize - 1) / 2 - distanceFromMidRow), gaussianBlur->at(i, (randomKernelSize - 1) / 2 + distanceFromMidRow));
+            EXPECT_FLOAT_EQ(gaussianBlur->at(j, (randomKernelSize - 1) / 2 - distanceFromMidColumn), gaussianBlur->at(j, (randomKernelSize - 1) / 2 + distanceFromMidColumn));
         }
     }
 }

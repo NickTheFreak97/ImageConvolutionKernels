@@ -66,19 +66,67 @@ template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 Channel<IEEE754_t>* Channel<IEEE754_t>::normalized() const {
     auto normalizedChannelValues = new IEEE754_t[this->getRows() * this->getColumns()];
 
+    auto minValue = this->at(0, 0);
+    auto maxValue = this->at(0, 0);
+
     for (int i = 0; i < this->getRows(); i++) {
         for (int j = 0; j < this->getColumns(); j++) {
-            if (this->getMatrixLayout() == ROW_MAJOR) {
-                normalizedChannelValues[i * this -> getColumns() + j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
-            } else {
-                normalizedChannelValues[i + this->getRows() * j] = this -> at(i, j) / static_cast<IEEE754_t>(this->maxTheoreticalValue);
+            auto currentElement = this->at(i, j);
+            if (currentElement < minValue) {
+                minValue = currentElement;
+            }
+
+            if (currentElement > maxValue) {
+                maxValue = currentElement;
             }
         }
     }
 
-    return new Channel<IEEE754_t>(
+    for (int i = 0; i < this->getRows(); i++) {
+        for (int j = 0; j < this->getColumns(); j++) {
+            auto normalizedValue = (this -> at(i, j) - minValue) / (maxValue - minValue);;
+
+            if (this->getMatrixLayout() == ROW_MAJOR) {
+                normalizedChannelValues[i * this -> getColumns() + j] = normalizedValue;
+            } else {
+                normalizedChannelValues[i + this->getRows() * j] = normalizedValue;
+            }
+        }
+    }
+
+    return new Channel(
         1,
         normalizedChannelValues,
+        this->getRows(),
+        this->getColumns(),
+        this->getMatrixLayout()
+    );
+}
+
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+Channel<IEEE754_t>* Channel<IEEE754_t>::clamped(IEEE754_t min, IEEE754_t max) const {
+    assert(min <= max);
+
+    auto clampedChannelValues = new IEEE754_t[this->getRows() * this->getColumns()];
+
+    for (int i = 0; i < this->getRows(); i++) {
+        for (int j = 0; j < this->getColumns(); j++) {
+            auto currentChannelValue = this->at(i, j);
+            auto clampedValue = (currentChannelValue < min) ? min : (currentChannelValue > max) ? max : currentChannelValue;
+
+            if (this->getMatrixLayout() == ROW_MAJOR) {
+                clampedChannelValues[i * this -> getColumns() + j] = clampedValue;
+            } else {
+                clampedChannelValues[i + this->getRows() * j] = clampedValue;
+            }
+
+        }
+    }
+
+    return new Channel(
+        this->maxTheoreticalValue,
+        clampedChannelValues,
         this->getRows(),
         this->getColumns(),
         this->getMatrixLayout()
