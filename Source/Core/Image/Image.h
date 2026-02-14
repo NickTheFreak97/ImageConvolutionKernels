@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <vector>
+#include <filesystem>
 #include <initializer_list>
 
 #include "../Channel/Channel.h"
@@ -28,12 +29,12 @@ public:
 
     [[nodiscard]] unsigned int getWidth() const;
     [[nodiscard]] unsigned int getHeight() const;
-    [[nodiscard]] unsigned int getChannelCount() const;
+    [[nodiscard]] unsigned int getChannelsCount() const;
     Channel<IEEE754_t>* getChannel(unsigned int channelIndex) const;
 
     void writeToFile(const std::string& filename, const ImageChannelsEncoding& encoding) const;
-    virtual void writeHeaderToFile(const std::string& filename, const ImageChannelsEncoding& encoding) const = 0;
-    virtual void writeChannelsToFile(const std::string& filename, const ImageChannelsEncoding& encoding) const = 0;
+    virtual void writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const = 0;
+    virtual void writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const = 0;
 };
 
 #endif

@@ -1,8 +1,11 @@
 #include <random>
 #include <gtest/gtest.h>
+#include <filesystem>
+
 #include  "../../Source/Core/Channel/Channel.h"
-#include "../../Source/Core/Image/Image.h"
+#include "../../Source/Core/Image/ImageFormats/PPMImage.h"
 #include "../../Source/Core/ConvolutionKernel/Kernels/Identity.cpp"
+#include "../../Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp"
 #include "../../Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h"
 
 float _mockImageRChannel[] = {
@@ -19,9 +22,9 @@ float mockImageBChannel[] = {
 
 
 TEST(ImageTests, TestImageFiltering) {
-    auto R = new Channel<float>(
+    auto R = new Channel(
         255,
-        new Matrix<float>(
+        new Matrix(
             _mockImageRChannel,
             256,
             256,
@@ -29,18 +32,18 @@ TEST(ImageTests, TestImageFiltering) {
         )
     );
 
-    auto G = new Channel<float>(
+    auto G = new Channel(
         255,
-        new Matrix<float>(
+        new Matrix(
             mockImageGChannel,
             256,
             256,
             ROW_MAJOR
         )
     );
-    auto B = new Channel<float>(
+    auto B = new Channel(
         255,
-        new Matrix<float>(
+        new Matrix(
             mockImageBChannel,
             256,
             256,
@@ -48,25 +51,76 @@ TEST(ImageTests, TestImageFiltering) {
         )
     );
 
-    /*
-    auto image = new Image<float>(256, 256, {R, G, B});
+    Image<float>* image = new PPMImage<float>(256, 256, R, G, B);
     auto kernel = Kernels::identity<float>(9);
     auto strategy = new PeriodicExtensionMatrixPaddingStrategy<float>();
 
     auto filteredImage = image->filtered(kernel, strategy);
 
-    for (int i = 0; i < filteredImage->getChannelCount(); i++) {
+    for (int i = 0; i < filteredImage->getChannelsCount(); i++) {
         auto ithFilteredChannel = filteredImage->getChannel(i);
         auto ithOriginalChannel = filteredImage->getChannel(i);
 
         EXPECT_EQ(ithFilteredChannel->getRows(), ithOriginalChannel->getRows());
         EXPECT_EQ(ithFilteredChannel->getColumns(), ithOriginalChannel->getColumns());
 
-
         for (int k = 0; k < ithFilteredChannel->getRows(); k++) {
             for ( int l = 0; l < ithFilteredChannel->getColumns(); l++) {
                 EXPECT_FLOAT_EQ(ithFilteredChannel->at(k, l), ithOriginalChannel->at(k, l));
             }
         }
-    }*/
+    }
+}
+
+TEST(ImageTests, TestImageWriteToFile) {
+
+    std::filesystem::path tempDir = std::filesystem::temp_directory_path() / "testImage";
+    std::filesystem::create_directories(tempDir);
+
+    auto R = new Channel(
+        255,
+        new Matrix(
+            _mockImageRChannel,
+            256,
+            256,
+            ROW_MAJOR
+        )
+    );
+
+    auto G = new Channel(
+        255,
+        new Matrix(
+            mockImageGChannel,
+            256,
+            256,
+            ROW_MAJOR
+        )
+    );
+    auto B = new Channel(
+        255,
+        new Matrix(
+            mockImageBChannel,
+            256,
+            256,
+            ROW_MAJOR
+        )
+    );
+
+    Image<float>* image = new PPMImage<float>(256, 256, R, G, B);
+    auto kernel = Kernels::gaussianKernel<float>(9, 1.3);
+    auto strategy = new PeriodicExtensionMatrixPaddingStrategy<float>();
+
+    auto filteredImage = image->filtered(kernel, strategy);
+
+    for (int i = 0; i < filteredImage->getChannelsCount(); i++) {
+        auto ithFilteredChannel = filteredImage->getChannel(i);
+        auto ithOriginalChannel = filteredImage->getChannel(i);
+
+        EXPECT_EQ(ithFilteredChannel->getRows(), ithOriginalChannel->getRows());
+        EXPECT_EQ(ithFilteredChannel->getColumns(), ithOriginalChannel->getColumns());
+    }
+
+    filteredImage->writeToFile(tempDir / "paw", ImageChannelsEncoding::PLAIN);
+
+    std::filesystem::remove_all(tempDir);
 }

@@ -40,7 +40,7 @@ unsigned int Image<IEEE754_t>::getHeight() const {
 }
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-unsigned int Image<IEEE754_t>::getChannelCount() const {
+unsigned int Image<IEEE754_t>::getChannelsCount() const {
     return this->channels.size();
 }
 

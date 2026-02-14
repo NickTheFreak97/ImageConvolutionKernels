@@ -55,6 +55,8 @@ add_executable(
         Source/Core/Channel/Channel.h
         Source/Core/Image/Image.cpp
         Source/Core/Image/Image.h
+        Source/Core/Image/ImageFormats/PPMImage.h
+        Source/Core/Image/ImageFormats/PPMImage.cpp
         Testing/Matrix/testMatrix.cpp
         Testing/Matrix/testMatrixPadding.cpp
         Testing/Image/testConvolutionKernel.cpp
