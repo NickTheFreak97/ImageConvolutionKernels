@@ -34,6 +34,8 @@ add_executable(
         Source/Core/ConvolutionKernel/Kernels/Identity.cpp
         Source/Core/Image/Image.cpp
         Source/Core/Image/Image.h
+        Source/Core/Image/ImageFormats/PPMImage.cpp
+        Source/Core/Image/ImageFormats/PPMImage.h
 )
 
 target_link_libraries(ImageConvolutionKernel PRIVATE gtest gtest_main)
