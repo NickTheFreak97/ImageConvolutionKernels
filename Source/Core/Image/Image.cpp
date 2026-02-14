@@ -49,37 +49,10 @@ Channel<IEEE754_t>* Image<IEEE754_t>::getChannel(unsigned int channelIndex) cons
     return this->channels.at(channelIndex);
 }
 
-/*
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-Image<IEEE754_t> *Image<IEEE754_t>::filtered(const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *withPaddingStrategy) const {
-    auto newChannels = std::vector<Channel<IEEE754_t> *>();
-
-    for (auto channel : this->channels) {
-        newChannels.push_back(channel->filtered(usingKernel, withPaddingStrategy));
-    }
-
-    return new Image(this->width, this->height, newChannels);
-}*/
-
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-void Image<IEEE754_t>::writeToFile(const std::string& filename, const ImageChannelsEncoding& encoding) const {
-    /*
-    std::ofstream fileHandle;
-
-    fileHandle.open(filename.c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::binary);
-
-    if (fileHandle.fail()) {
-        throw std::runtime_error("Could not open the specified file");
-    }
-    */
-
-
-    this->writeHeaderToFile(filename, encoding);
-    this->writeChannelsToFile(filename, encoding);
-
-    /*
-    fileHandle.close();
-    */
+void Image<IEEE754_t>::writeToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
+    this->writeHeaderToFile(filepath, encoding);
+    this->writeChannelsToFile(filepath, encoding);
 }
 
 template class Image<float>;

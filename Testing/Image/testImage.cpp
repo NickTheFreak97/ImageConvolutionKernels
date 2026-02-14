@@ -6,6 +6,7 @@
 #include "../../Source/Core/Image/ImageFormats/PPMImage.h"
 #include "../../Source/Core/ConvolutionKernel/Kernels/Identity.cpp"
 #include "../../Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp"
+#include "../../Source/Core/Image/ImageFormats/Header/NetpmbHeader.h"
 #include "../../Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h"
 
 float _mockImageRChannel[] = {
@@ -120,7 +121,10 @@ TEST(ImageTests, TestImageWriteToFile) {
         EXPECT_EQ(ithFilteredChannel->getColumns(), ithOriginalChannel->getColumns());
     }
 
-    filteredImage->writeToFile(tempDir / "paw", ImageChannelsEncoding::PLAIN);
+    filteredImage->writeToFile(tempDir / "paw", ImageChannelsEncoding::BINARY);
 
+    auto header = NetpmbHeader::parsing(tempDir / "paw.ppm");
+
+    std::cout << ((header->getFormat() == ImageNetpbmFormat::PPM_ASCII) ? "P3" : "P6") << ", " << header->getRows() << ", " << header->getColumns() << std::endl;
     std::filesystem::remove_all(tempDir);
 }

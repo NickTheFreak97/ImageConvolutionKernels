@@ -64,10 +64,10 @@ void PPMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filep
         throw std::runtime_error("Could not open the specified file");
     }
 
-
     for (auto i = 0; i < this->getHeight(); i++) {
         for (auto j = 0; j < this->getWidth(); j++) {
             for (auto k = 0; k < this->getChannelsCount(); k++) {
+
                 auto currentChannel = this->getChannel(k);
                 auto currentPixelValue = static_cast<int>(currentChannel->at(i, j));
 
@@ -76,8 +76,7 @@ void PPMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filep
                 if (encoding == ImageChannelsEncoding::PLAIN) {
                     fileHandle << std::to_string(currentPixelValue) << " ";
                 } else {
-                    auto pixelValueBinary = static_cast<std::byte>(currentPixelValue);
-                    fileHandle.write(reinterpret_cast<const char*>(pixelValueBinary), 1);
+                    fileHandle.write(reinterpret_cast<const char*>(&currentPixelValue), 1);
                 }
             }
         }

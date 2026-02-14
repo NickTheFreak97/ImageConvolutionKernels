@@ -5,12 +5,20 @@
 #include <vector>
 #include <filesystem>
 #include <initializer_list>
+#include <limits>
 
 #include "../Channel/Channel.h"
 
 enum class ImageChannelsEncoding {
     PLAIN = 0,
     BINARY = 1,
+};
+
+
+enum class ImageNetpbmFormat {
+    PPM_ASCII = 0,
+    PPM_BINARY = 1,
+    INVALID = std::numeric_limits<int>::max()
 };
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
@@ -32,7 +40,7 @@ public:
     [[nodiscard]] unsigned int getChannelsCount() const;
     Channel<IEEE754_t>* getChannel(unsigned int channelIndex) const;
 
-    void writeToFile(const std::string& filename, const ImageChannelsEncoding& encoding) const;
+    void writeToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const;
     virtual void writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const = 0;
     virtual void writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const = 0;
 };

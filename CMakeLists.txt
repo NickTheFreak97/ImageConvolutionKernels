@@ -36,6 +36,8 @@ add_executable(
         Source/Core/Image/Image.h
         Source/Core/Image/ImageFormats/PPMImage.cpp
         Source/Core/Image/ImageFormats/PPMImage.h
+        Source/Core/Image/ImageFormats/Header/NetpmbHeader.cpp
+        Source/Core/Image/ImageFormats/Header/NetpmbHeader.h
 )
 
 target_link_libraries(ImageConvolutionKernel PRIVATE gtest gtest_main)
@@ -57,6 +59,8 @@ add_executable(
         Source/Core/Image/Image.h
         Source/Core/Image/ImageFormats/PPMImage.h
         Source/Core/Image/ImageFormats/PPMImage.cpp
+        Source/Core/Image/ImageFormats/Header/NetpmbHeader.cpp
+        Source/Core/Image/ImageFormats/Header/NetpmbHeader.h
         Testing/Matrix/testMatrix.cpp
         Testing/Matrix/testMatrixPadding.cpp
         Testing/Image/testConvolutionKernel.cpp
