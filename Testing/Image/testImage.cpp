@@ -123,8 +123,6 @@ TEST(ImageTests, TestImageWriteToFile) {
 
     filteredImage->writeToFile(tempDir / "paw", ImageChannelsEncoding::BINARY);
 
-    auto header = NetpmbHeader::parsing(tempDir / "paw.ppm");
-
-    std::cout << ((header->getFormat() == ImageNetpbmFormat::PPM_ASCII) ? "P3" : "P6") << ", " << header->getRows() << ", " << header->getColumns() << std::endl;
+    auto loadedImage = PPMImage<float>::loadImage(tempDir / "paw.ppm");
     std::filesystem::remove_all(tempDir);
 }

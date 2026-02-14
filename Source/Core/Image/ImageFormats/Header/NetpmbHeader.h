@@ -10,19 +10,21 @@ private:
     ImageNetpbmFormat format;
     unsigned int rows;
     unsigned int columns;
+    unsigned int maxPixelValue;
     std::streampos positionOfFirstPixel;
-    static std::optional<std::string> getNextWord(std::ifstream& fromFile);
 
 protected:
-    NetpmbHeader(ImageNetpbmFormat format, unsigned int rows, unsigned int columns, const std::streampos& positionOfFirstPixel);
+    NetpmbHeader(ImageNetpbmFormat format, unsigned int rows, unsigned int columns, unsigned int max, const std::streampos& positionOfFirstPixel);
 
 public:
     [[nodiscard]] ImageNetpbmFormat getFormat() const;
     [[nodiscard]] unsigned int getRows() const;
     [[nodiscard]] unsigned int getColumns() const;
+    [[nodiscard]] unsigned int getMaxPixelValue() const;
     [[nodiscard]] std::streampos getPositionOfFirstPixel() const;
 
     static NetpmbHeader* parsing(const std::filesystem::path& filePath);
+    static std::optional<std::string> getNextWord(std::ifstream& fromFile);
 };
 
 

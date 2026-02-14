@@ -2,7 +2,13 @@
 #include <fstream>
 #include <optional>
 
-NetpmbHeader::NetpmbHeader(ImageNetpbmFormat format, unsigned int rows, unsigned int columns, const std::streampos &positionOfFirstPixel) : format(format), rows(rows),  columns(columns), positionOfFirstPixel(positionOfFirstPixel) {
+NetpmbHeader::NetpmbHeader(
+    ImageNetpbmFormat format,
+    unsigned int rows,
+    unsigned int columns,
+    unsigned int max,
+    const std::streampos &positionOfFirstPixel
+) : format(format), rows(rows),  columns(columns), maxPixelValue(max), positionOfFirstPixel(positionOfFirstPixel) {
 
 }
 
@@ -103,7 +109,7 @@ NetpmbHeader *NetpmbHeader::parsing(const std::filesystem::path &filePath) {
 
     fileHandler.close();
 
-    return new NetpmbHeader(format, height, width, firstPixelPosition);
+    return new NetpmbHeader(format, height, width, maxChannelValue, firstPixelPosition);
 }
 
 
@@ -117,6 +123,10 @@ unsigned int NetpmbHeader::getRows() const {
 
 unsigned int NetpmbHeader::getColumns() const {
     return this->columns;
+}
+
+unsigned int NetpmbHeader::getMaxPixelValue() const {
+    return this->maxPixelValue;
 }
 
 std::streampos NetpmbHeader::getPositionOfFirstPixel() const {
