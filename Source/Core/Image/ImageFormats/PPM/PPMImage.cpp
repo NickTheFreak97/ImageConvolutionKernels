@@ -59,7 +59,6 @@ PPMImage<IEEE754_t> *PPMImage<IEEE754_t>::filtered(const ConvolutionKernel<IEEE7
     }
 
     return new PPMImage(PPMImage::getWidth(), PPMImage::getHeight(), newChannels);
-
 }
 
 

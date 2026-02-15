@@ -65,6 +65,8 @@ add_executable(
         Source/Core/Image/Image.h
         Source/Core/Image/ImageFormats/PPM/PPMImage.h
         Source/Core/Image/ImageFormats/PPM/PPMImage.cpp
+        Source/Core/Image/ImageFormats/PGM/PGMImage.cpp
+        Source/Core/Image/ImageFormats/PGM/PGMImage.h
         Source/Core/Image/ImageFormats/Header/NetpbmHeader.cpp
         Source/Core/Image/ImageFormats/Header/NetpbmHeader.h
         Source/Core/Image/ImageFormats/NetpbmImage.cpp

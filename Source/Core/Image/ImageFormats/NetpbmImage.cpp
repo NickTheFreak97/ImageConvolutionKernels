@@ -9,6 +9,7 @@
 
 #include "../../Utils/FileUtils.h"
 #include "PPM/PPMImage.h"
+#include "PGM//PGMImage.h"
 
 template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
 NetpbmImage<IEEE754_t, Derived>::NetpbmImage(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t> *> channels, std::optional<NetpbmHeader*> header) : header(header), Image<IEEE754_t>(width, height, std::move(channels)) {
@@ -168,18 +169,15 @@ NetpbmImage<IEEE754_t, Derived> *NetpbmImage<IEEE754_t, Derived>::loadImage(cons
     fileHandle.close();
 
     auto outputChannels = std::vector<Channel<IEEE754_t>*>();
-    for (size_t i = 0; i < channels.size(); i++) {
-        size_t dataSize = channels[i].size();
-        IEEE754_t* heapData = new IEEE754_t[dataSize];
-        std::copy(channels[i].begin(), channels[i].end(), heapData);
-
-        outputChannels.push_back(new Channel<IEEE754_t>(
+    std::ranges::transform(channels, std::back_inserter(outputChannels),
+    [parsedHeader](std::vector<IEEE754_t>& channelValues) {  // Pass by REFERENCE
+        return new Channel<IEEE754_t>(
             parsedHeader->getMaxPixelValue(),
-            heapData,
+            channelValues.data(),
             parsedHeader->getRows(),
             parsedHeader->getColumns()
-        ));
-    }
+        );
+    });
 
     return new Derived(
         parsedHeader->getColumns(),
@@ -214,3 +212,7 @@ std::optional<unsigned int> NetpbmImage<IEEE754_t, Derived>::getMaxChannelValue(
 template class NetpbmImage<float, PPMImage<float>>;
 template class NetpbmImage<double, PPMImage<double>>;
 template class NetpbmImage<long double, PPMImage<long double>>;
+
+template class NetpbmImage<float, PGMImage<float>>;
+template class NetpbmImage<double, PGMImage<double>>;
+template class NetpbmImage<long double, PGMImage<long double>>;

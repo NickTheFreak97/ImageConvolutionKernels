@@ -4,13 +4,40 @@
 #include "../../Image.h"
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-PGMImage<IEEE754_t>::PGMImage(unsigned int width, unsigned int height, Channel<IEEE754_t> *G, std::optional<NetpbmHeader *> header) : header(header), Image<IEEE754_t>(width, height, {G}) {
+PGMImage<IEEE754_t>::PGMImage(unsigned int width, unsigned int height, Channel<IEEE754_t> *G, std::optional<NetpbmHeader *> header) : header(header), NetpbmImage<IEEE754_t, PGMImage>(width, height, {G}) {
 
 }
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+PGMImage<IEEE754_t>::PGMImage(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t>*> channels, std::optional<NetpbmHeader*> header)
+    : NetpbmImage<IEEE754_t, PGMImage>(width, height, channels, header) {
+    assert(channels.size() == 1 && "PPMImage must have exactly 1 channel: G");
+}
+
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+[[nodiscard]] std::optional<unsigned int> PGMImage<IEEE754_t>::getExpectedChannelsCount() {
+    return std::optional<unsigned int>(1);
+}
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+[[nodiscard]] std::optional<unsigned int> PGMImage<IEEE754_t>::getHeaderSpecifier(const ImageChannelsEncoding& forEncoding) {
+    switch (forEncoding) {
+        case ImageChannelsEncoding::PLAIN:
+            return 2;
+        case ImageChannelsEncoding::BINARY:
+            return 5;
+        default:
+            return std::nullopt;
+    }
+}
+
+
+
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 PGMImage<IEEE754_t> *PGMImage<IEEE754_t>::filtered(const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *withPaddingStrategy) const {
-    assert(this->getChannelsCount() == 1);
+    assert(PGMImage::getExpectedChannelsCount().has_value());
+    assert(this->getChannelsCount() == PGMImage::getExpectedChannelsCount());
 
     auto newChannels = std::vector<Channel<IEEE754_t> *>();
 
@@ -19,63 +46,21 @@ PGMImage<IEEE754_t> *PGMImage<IEEE754_t>::filtered(const ConvolutionKernel<IEEE7
         newChannels.push_back(channel->filtered(usingKernel, withPaddingStrategy));
     }
 
-    return new PGMImage(this->getWidth(), this->getHeight(), newChannels[0], header);
+    return new PGMImage(this->getWidth(), this->getHeight(), newChannels);
 }
 
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-void PGMImage<IEEE754_t>::writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
-    assert(this->getChannelsCount() == 3);
-
-    std::ofstream fileHandle;
-
-    fileHandle.open((filepath.string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
-
-    if (fileHandle.fail()) {
-        throw std::runtime_error("Could not open the specified file");
-    }
-
-    fileHandle << "P" << ((encoding == ImageChannelsEncoding::PLAIN) ? "3" : "6") << std::endl;
-    fileHandle << std::to_string(this->getWidth()) << " " << std::to_string(this->getHeight()) << std::endl;
-    fileHandle << "255" << std::endl;
-
-    fileHandle.close();
+[[nodiscard]] std::optional<std::string> PGMImage<IEEE754_t>::getFileExtension() {
+    return std::optional<std::string>("pgm");
 }
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-void PGMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
-    assert(this->getChannelsCount() == 3);
-
-    std::ofstream fileHandle;
-
-    fileHandle.open((filepath.string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::app : std::ios::app | std::ios::binary);
-
-    if (fileHandle.fail()) {
-        throw std::runtime_error("Could not open the specified file");
-    }
-
-    for (auto i = 0; i < this->getHeight(); i++) {
-        for (auto j = 0; j < this->getWidth(); j++) {
-            for (auto k = 0; k < this->getChannelsCount(); k++) {
-
-                auto currentChannel = this->getChannel(k);
-                if (currentChannel->getMatrixLayout() == COLUMN_MAJOR) {
-                    currentChannel = currentChannel->transposedChannel();
-                }
-
-                int currentPixelValue = static_cast<int>(currentChannel->at(i, j));
-
-                assert(currentPixelValue >= 0 && currentPixelValue <= 255);
-
-                if (encoding == ImageChannelsEncoding::PLAIN) {
-                    fileHandle << std::to_string(currentPixelValue) << " ";
-                } else {
-                    fileHandle.write(reinterpret_cast<const char*>(&currentPixelValue), 1);
-                }
-            }
-        }
-    }
-
-    fileHandle.close();
+[[nodiscard]] std::optional<unsigned int> PGMImage<IEEE754_t>::getMaxChannelValue() {
+    return std::optional<unsigned int>(65535);
 }
 
+
+template class PGMImage<float>;
+template class PGMImage<double>;
+template class PGMImage<long double>;
