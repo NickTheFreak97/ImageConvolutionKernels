@@ -1,5 +1,6 @@
 #include "NetpbmHeader.h"
 #include <fstream>
+#include <iostream>
 #include <optional>
 
 #include "../../../Utils/FileUtils.h"
@@ -17,6 +18,7 @@ NetpbmHeader::NetpbmHeader(
 NetpbmHeader *NetpbmHeader::parsing(const std::filesystem::path &filePath) {
     std::ifstream fileHandler(filePath.string().c_str(), std::ios::binary);
 
+    std::cout << filePath.string() << std::endl;
     if (!fileHandler.is_open()) {
         return nullptr;
     }

@@ -1,9 +1,14 @@
-#include <iostream>
-#include "Source/Core/Matrix/Matrix.h"
+#include "Source/Core/Image/ImageFormats/PPM/PPMImage.h"
+#include "Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp"
+#include "Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h"
+#include <filesystem>
 
 int main() {
-    float matrixData[] = {1.0f, 2.0f, 3.0f, 4.0f};
-    Matrix<float> mat(matrixData, 2, 2, ROW_MAJOR);
+    auto loadedImage = NetpbmImage<float, PPMImage<float>>::loadImage( std::filesystem::current_path() / "paw.ppm");
+    auto gaussianBlur = Kernels::gaussianKernel<float>(9, 1.3);
+    auto imagePaddingStrategy = new PeriodicExtensionMatrixPaddingStrategy<float>();
 
+    auto blurredImage = loadedImage->filtered(gaussianBlur, imagePaddingStrategy);
+    blurredImage->writeToFile(std::filesystem::current_path() /"paw_blurred.ppm", ImageChannelsEncoding::BINARY);
     return 0;
 }
