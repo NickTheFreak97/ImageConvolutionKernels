@@ -14,7 +14,7 @@ TEST(MatrixTest, Transposition) {
     auto itsTranspose = rowMajorMatrix.transposed();
     for (int i=0; i < rows; i++) {
         for (int j=0; j < columns; j++) {
-            EXPECT_EQ(rowMajorMatrix[i][j], itsTranspose[j][i]);
+            EXPECT_EQ(rowMajorMatrix[i][j], (*itsTranspose)[j][i]);
         }
     }
 }

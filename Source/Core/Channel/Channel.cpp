@@ -182,6 +182,13 @@ Channel<IEEE754_t> *Channel<IEEE754_t>::filtered(const ConvolutionKernel<IEEE754
 }
 
 
+template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
+[[nodiscard]] Channel<IEEE754_t>* Channel<IEEE754_t>::transposedChannel() const {
+    return new Channel(this->maxTheoreticalValue, this->transposed());
+}
+
+
+
 template class Channel<float>;
 template class Channel<double>;
 template class Channel<long double>;

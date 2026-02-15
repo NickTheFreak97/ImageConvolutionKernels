@@ -16,8 +16,10 @@ enum class ImageChannelsEncoding {
 
 
 enum class ImageNetpbmFormat {
-    PPM_ASCII = 0,
-    PPM_BINARY = 1,
+    PPM_ASCII = 3,
+    PPM_BINARY = 6,
+    PGM_ASCII = 2,
+    PGM_BINARY = 5,
     INVALID = std::numeric_limits<int>::max()
 };
 

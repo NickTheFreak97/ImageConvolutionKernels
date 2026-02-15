@@ -3,10 +3,10 @@
 #include <filesystem>
 
 #include  "../../Source/Core/Channel/Channel.h"
-#include "../../Source/Core/Image/ImageFormats/PPMImage.h"
+#include "../../Source/Core/Image/ImageFormats/PPM/PPMImage.h"
 #include "../../Source/Core/ConvolutionKernel/Kernels/Identity.cpp"
 #include "../../Source/Core/ConvolutionKernel/Kernels/GaussianKernel.cpp"
-#include "../../Source/Core/Image/ImageFormats/Header/NetpmbHeader.h"
+#include "../../Source/Core/Image/ImageFormats/Header/NetpbmHeader.h"
 #include "../../Source/Core/MatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy/PeriodicExtensionMatrixPaddingStrategy.h"
 
 float _mockImageRChannel[] = {

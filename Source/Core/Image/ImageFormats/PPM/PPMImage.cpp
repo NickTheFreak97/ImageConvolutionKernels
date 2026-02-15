@@ -1,11 +1,13 @@
-#include "PPMImage.h"
+#include "../PPM/PPMImage.h"
 #include <cassert>
 #include <cmath>
 #include <fstream>
 #include <vector>
 
+#include "../../../Utils/FileUtils.h"
+
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-PPMImage<IEEE754_t>::PPMImage(unsigned int width, unsigned int height, Channel<IEEE754_t> *R, Channel<IEEE754_t> *G, Channel<IEEE754_t> *B, std::optional<NetpmbHeader*> header) : header(header), Image<IEEE754_t>(
+PPMImage<IEEE754_t>::PPMImage(unsigned int width, unsigned int height, Channel<IEEE754_t> *R, Channel<IEEE754_t> *G, Channel<IEEE754_t> *B, std::optional<NetpbmHeader*> header) : header(header), Image<IEEE754_t>(
     width,
     height,
     [R, G, B] {
@@ -32,14 +34,14 @@ PPMImage<IEEE754_t> *PPMImage<IEEE754_t>::filtered(const ConvolutionKernel<IEEE7
     return new PPMImage(this->getWidth(), this->getHeight(), newChannels[0], newChannels[1], newChannels[2]);
 }
 
-// FIXME: Remove .stem(). to write in the actual directory after testing
+
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 void PPMImage<IEEE754_t>::writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
     assert(this->getChannelsCount() == 3);
 
     std::ofstream fileHandle;
 
-    fileHandle.open((filepath.stem().string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
+    fileHandle.open((filepath.string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
 
     if (fileHandle.fail()) {
         throw std::runtime_error("Could not open the specified file");
@@ -52,14 +54,13 @@ void PPMImage<IEEE754_t>::writeHeaderToFile(const std::filesystem::path& filepat
     fileHandle.close();
 }
 
-// FIXME: Remove .stem(). to write in the actual directory after testing
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 void PPMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
     assert(this->getChannelsCount() == 3);
 
     std::ofstream fileHandle;
 
-    fileHandle.open((filepath.stem().string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::app : std::ios::app | std::ios::binary);
+    fileHandle.open((filepath.string() + ".ppm").c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::app : std::ios::app | std::ios::binary);
 
     if (fileHandle.fail()) {
         throw std::runtime_error("Could not open the specified file");
@@ -70,6 +71,10 @@ void PPMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filep
             for (auto k = 0; k < this->getChannelsCount(); k++) {
 
                 auto currentChannel = this->getChannel(k);
+                if (currentChannel->getMatrixLayout() == COLUMN_MAJOR) {
+                    currentChannel = currentChannel->transposedChannel();
+                }
+
                 int currentPixelValue = static_cast<int>(currentChannel->at(i, j));
 
                 assert(currentPixelValue >= 0 && currentPixelValue <= 255);
@@ -87,17 +92,15 @@ void PPMImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filep
 }
 
 
-// FIXME: Remove .stem(). to write in the actual directory after testing
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
 PPMImage<IEEE754_t>* PPMImage<IEEE754_t>::loadImage(const std::filesystem::path &filepath) {
-    auto filename = filepath.filename();
-    auto header = NetpmbHeader::parsing(filepath);
+    auto header = NetpbmHeader::parsing(filepath);
 
     if (!header) {
         return nullptr;
     }
 
-    std::ifstream fileHandle(filename, std::ios::binary);
+    std::ifstream fileHandle(filepath.string(), std::ios::binary);
     fileHandle.seekg(header->getPositionOfFirstPixel());
 
     auto red = std::vector<IEEE754_t>();
@@ -105,31 +108,15 @@ PPMImage<IEEE754_t>* PPMImage<IEEE754_t>::loadImage(const std::filesystem::path 
     auto blue = std::vector<IEEE754_t>();
 
     auto inputPixelValueCount = 0;
-    auto pixelsPerValue = ceil(log2(static_cast<float>(header->getMaxPixelValue() + 1)) / 8);
+    auto pixelsPerValue = static_cast<unsigned int>(ceil(log2(static_cast<float>(header->getMaxPixelValue() + 1)) / 8));
 
     while (true) {
         std::optional<std::string> nextValue;
 
         if (header->getFormat() == ImageNetpbmFormat::PPM_BINARY) {
-            unsigned char nextChar;
-            uint64_t nextPixelIntValue = 0;
-
-            for (int i = 0; i < pixelsPerValue; i++) {
-                fileHandle.read(reinterpret_cast<char*>(&nextChar), 1);
-                if (fileHandle.good()) {
-                    nextPixelIntValue = (nextPixelIntValue << 8) | nextChar;
-                } else {
-                    break;
-                }
-            }
-
-            if (fileHandle.good()) {
-                nextValue = std::optional(std::to_string(nextPixelIntValue));
-            } else {
-                nextValue = std::nullopt;
-            }
+            nextValue = FileUtils::getNextBytes(fileHandle, pixelsPerValue);
         } else {
-            nextValue = NetpmbHeader::getNextWord(fileHandle);
+            nextValue = FileUtils::getNextWord(fileHandle);
         }
 
         if (nextValue.has_value()) {

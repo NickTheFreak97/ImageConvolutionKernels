@@ -40,7 +40,7 @@ IEEE754_t* Matrix<IEEE754_t>::operator[](int row) const {
 
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-Matrix<IEEE754_t> Matrix<IEEE754_t>::transposed() const {
+Matrix<IEEE754_t>* Matrix<IEEE754_t>::transposed() const {
     auto transposedMatrix = new IEEE754_t[this->rows * this->columns];
     for ( int i = 0; i < this->rows * this->columns; i++ ) {
         int row = this->layout == ROW_MAJOR ? i / this->columns : i % this->rows;
@@ -50,7 +50,7 @@ Matrix<IEEE754_t> Matrix<IEEE754_t>::transposed() const {
         transposedMatrix[transposedIndex] = this->matrix[i];
     }
 
-    return Matrix<IEEE754_t>(
+    return new Matrix<IEEE754_t>(
         transposedMatrix,
         this->columns,
         this->rows,

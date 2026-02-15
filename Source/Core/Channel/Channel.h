@@ -31,6 +31,7 @@ public:
     [[nodiscard]] Channel* normalized() const;
     [[nodiscard]] Channel* clamped(IEEE754_t min, IEEE754_t max) const;
     Channel* filtered(const ConvolutionKernel<IEEE754_t>* usingKernel, const MatrixPaddingStrategy<IEEE754_t>* withPaddingStrategy) const;
+    Channel* transposedChannel() const;
 
 
 };

@@ -5,7 +5,7 @@
 
 #include "../../Image.h"
 
-class NetpmbHeader {
+class NetpbmHeader {
 private:
     ImageNetpbmFormat format;
     unsigned int rows;
@@ -14,7 +14,7 @@ private:
     std::streampos positionOfFirstPixel;
 
 protected:
-    NetpmbHeader(ImageNetpbmFormat format, unsigned int rows, unsigned int columns, unsigned int max, const std::streampos& positionOfFirstPixel);
+    NetpbmHeader(ImageNetpbmFormat format, unsigned int rows, unsigned int columns, unsigned int max, const std::streampos& positionOfFirstPixel);
 
 public:
     [[nodiscard]] ImageNetpbmFormat getFormat() const;
@@ -23,8 +23,7 @@ public:
     [[nodiscard]] unsigned int getMaxPixelValue() const;
     [[nodiscard]] std::streampos getPositionOfFirstPixel() const;
 
-    static NetpmbHeader* parsing(const std::filesystem::path& filePath);
-    static std::optional<std::string> getNextWord(std::ifstream& fromFile);
+    static NetpbmHeader* parsing(const std::filesystem::path& filePath);
 };
 
 

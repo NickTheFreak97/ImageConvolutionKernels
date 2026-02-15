@@ -34,10 +34,16 @@ add_executable(
         Source/Core/ConvolutionKernel/Kernels/Identity.cpp
         Source/Core/Image/Image.cpp
         Source/Core/Image/Image.h
-        Source/Core/Image/ImageFormats/PPMImage.cpp
-        Source/Core/Image/ImageFormats/PPMImage.h
-        Source/Core/Image/ImageFormats/Header/NetpmbHeader.cpp
-        Source/Core/Image/ImageFormats/Header/NetpmbHeader.h
+        Source/Core/Image/ImageFormats/PPM/PPMImage.cpp
+        Source/Core/Image/ImageFormats/PPM/PPMImage.h
+        Source/Core/Image/ImageFormats/Header/NetpbmHeader.cpp
+        Source/Core/Image/ImageFormats/Header/NetpbmHeader.h
+        Source/Core/Utils/FileUtils.cpp
+        Source/Core/Utils/FileUtils.h
+        Source/Core/Image/ImageFormats/PGM/PGMImage.cpp
+        Source/Core/Image/ImageFormats/PGM/PGMImage.h
+        Source/Core/Image/ImageFormats/NetpbmImage.cpp
+        Source/Core/Image/ImageFormats/NetpbmImage.h
 )
 
 target_link_libraries(ImageConvolutionKernel PRIVATE gtest gtest_main)
@@ -57,16 +63,18 @@ add_executable(
         Source/Core/Channel/Channel.h
         Source/Core/Image/Image.cpp
         Source/Core/Image/Image.h
-        Source/Core/Image/ImageFormats/PPMImage.h
-        Source/Core/Image/ImageFormats/PPMImage.cpp
-        Source/Core/Image/ImageFormats/Header/NetpmbHeader.cpp
-        Source/Core/Image/ImageFormats/Header/NetpmbHeader.h
+        Source/Core/Image/ImageFormats/PPM/PPMImage.h
+        Source/Core/Image/ImageFormats/PPM/PPMImage.cpp
+        Source/Core/Image/ImageFormats/Header/NetpbmHeader.cpp
+        Source/Core/Image/ImageFormats/Header/NetpbmHeader.h
         Testing/Matrix/testMatrix.cpp
         Testing/Matrix/testMatrixPadding.cpp
         Testing/Image/testConvolutionKernel.cpp
         Testing/Image/testImageChannels.cpp
         Testing/Image/testImageChannels.cpp
         Testing/Image/testImage.cpp
+        Source/Core/Utils/FileUtils.cpp
+        Source/Core/Utils/FileUtils.h
 )
 
 target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main)

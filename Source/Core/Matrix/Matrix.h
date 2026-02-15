@@ -20,11 +20,10 @@ private:
 public:
     Matrix(const IEEE754_t* elements, unsigned int rows, unsigned int columns, MatrixLayout layout = ROW_MAJOR);
 
-    static Matrix<IEEE754_t> random(unsigned int, unsigned int, MatrixLayout layout = ROW_MAJOR);
-
+    static Matrix random(unsigned int, unsigned int, MatrixLayout layout = ROW_MAJOR);
     IEEE754_t* operator[](int row) const;
 
-    Matrix<IEEE754_t> transposed() const;
+    Matrix* transposed() const;
 
     MatrixLayout getMatrixLayout() const;
     unsigned int getRows() const;
