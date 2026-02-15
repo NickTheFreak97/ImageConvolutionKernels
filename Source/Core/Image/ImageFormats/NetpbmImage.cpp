@@ -4,24 +4,27 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <utility>
 
 #include "../../Utils/FileUtils.h"
+#include "PPM/PPMImage.h"
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-NetpbmImage<IEEE754_t>::NetpbmImage(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t> *> channels) : Image<IEEE754_t>(width, height, channels) {
-
-}
-
-
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-NetpbmImage<IEEE754_t>::NetpbmImage(unsigned int width, unsigned int height, std::initializer_list<Channel<IEEE754_t> *> channels) : Image<IEEE754_t>(width, height, channels) {
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+NetpbmImage<IEEE754_t, Derived>::NetpbmImage(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t> *> channels, std::optional<NetpbmHeader*> header) : header(header), Image<IEEE754_t>(width, height, std::move(channels)) {
 
 }
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::filtered(const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *withPaddingStrategy) const {
-    assert(this->getExpectedChannelsCount().has_value());
-    assert(this->getChannelsCount() == this->getExpectedChannelsCount());
+
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+NetpbmImage<IEEE754_t, Derived>::NetpbmImage(unsigned int width, unsigned int height, std::initializer_list<Channel<IEEE754_t> *> channels) : Image<IEEE754_t>(width, height, channels) {
+
+}
+
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+NetpbmImage<IEEE754_t, Derived> *NetpbmImage<IEEE754_t, Derived>::filtered(const ConvolutionKernel<IEEE754_t> *usingKernel, const MatrixPaddingStrategy<IEEE754_t> *withPaddingStrategy) const {
+    assert(NetpbmImage::getExpectedChannelsCount().has_value());
+    assert(this->getChannelsCount() == NetpbmImage::getExpectedChannelsCount());
 
     auto newChannels = std::vector<Channel<IEEE754_t> *>();
 
@@ -30,20 +33,20 @@ NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::filtered(const ConvolutionKernel
         newChannels.push_back(channel->filtered(usingKernel, withPaddingStrategy));
     }
 
-    return new NetpbmImage(this->getWidth(), this->getHeight(), newChannels);
+    return new Derived(NetpbmImage::getWidth(), NetpbmImage::getHeight(), newChannels);
 }
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-void NetpbmImage<IEEE754_t>::writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+void NetpbmImage<IEEE754_t, Derived>::writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
     assert(this->getExpectedChannelsCount().has_value());
     assert(this->getHeaderSpecifier(encoding).has_value() || this->header.has_value());
-    assert(this->getFileExtension(encoding).has_value());
-    assert(this->getMaxChannelValue(encoding).has_value() || this->header.has_value());
-    assert(this->getChannelsCount() == this->getExpectedChannelsCount());
+    assert(this->getFileExtension().has_value());
+    assert(this->getMaxChannelValue().has_value() || this->header.has_value());
+    assert(this->getChannelsCount() == NetpbmImage::getExpectedChannelsCount());
 
     std::ofstream fileHandle;
 
-    fileHandle.open((filepath.string() + "." + this->getFileExtension()).c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
+    fileHandle.open((filepath.string() + "." + NetpbmImage::getFileExtension().value()).c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
 
     if (fileHandle.fail()) {
         throw std::runtime_error("Could not open the specified file");
@@ -54,26 +57,27 @@ void NetpbmImage<IEEE754_t>::writeHeaderToFile(const std::filesystem::path& file
         fileHandle << std::to_string(this->header.value()->getColumns()) << " " << std::to_string(this->header.value()->getRows()) << std::endl;
         fileHandle << std::to_string(this->header.value()->getMaxPixelValue()) << std::endl;
     } else {
-        fileHandle << "P" << this->getHeaderSpecifier(encoding) << std::endl;
+        fileHandle << "P" << (NetpbmImage::getHeaderSpecifier(encoding).value()) << std::endl;
         fileHandle << std::to_string(this->getWidth()) << " " << std::to_string(this->getHeight()) << std::endl;
-        fileHandle << std::to_string(this->getMaxChannelValue()) << std::endl;
+        fileHandle << std::to_string(NetpbmImage::getMaxChannelValue().value()) << std::endl;
     }
 
     fileHandle.close();
 }
 
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-void NetpbmImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+void NetpbmImage<IEEE754_t, Derived>::writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const {
     assert(this->getExpectedChannelsCount().has_value());
     assert(this->getHeaderSpecifier(encoding).has_value() || this->header.has_value());
-    assert(this->getFileExtension(encoding).has_value());
-    assert(this->getMaxChannelValue(encoding).has_value() || this->header.has_value());
-    assert(this->getChannelsCount() == this->getExpectedChannelsCount());
+    assert(this->getFileExtension().has_value());
+    assert(this->getMaxChannelValue().has_value() || this->header.has_value());
+    assert(this->getChannelsCount() == NetpbmImage::getExpectedChannelsCount());
 
     std::ofstream fileHandle;
 
-    fileHandle.open((filepath.string() + "." + this->getFileExtension()).c_str(), encoding == ImageChannelsEncoding::PLAIN ? std::ios::trunc : std::ios::trunc | std::ios::binary);
+    fileHandle.open((filepath.string() + "." + NetpbmImage::getFileExtension().value()).c_str(),
+        encoding == ImageChannelsEncoding::PLAIN ? std::ios::app : std::ios::app | std::ios::binary);
 
     if (fileHandle.fail()) {
         throw std::runtime_error("Could not open the specified file");
@@ -93,13 +97,20 @@ void NetpbmImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& fi
                 if (this->header.has_value()) {
                     assert(currentPixelValue >= 0 && currentPixelValue <= this->header.value()->getMaxPixelValue());
                 } else {
-                    assert(currentPixelValue >= 0 && currentPixelValue <= this->getMaxChannelValue());
+                    assert(currentPixelValue >= 0 && currentPixelValue <= NetpbmImage::getMaxChannelValue().value());
                 }
 
                 if (encoding == ImageChannelsEncoding::PLAIN) {
                     fileHandle << std::to_string(currentPixelValue) << " ";
                 } else {
-                    fileHandle.write(reinterpret_cast<const char*>(&currentPixelValue), 1);
+                    if (NetpbmImage::getMaxChannelValue().value() < 256) {
+                        auto byte = static_cast<uint8_t>(currentPixelValue);
+                        fileHandle.write(reinterpret_cast<const char*>(&byte), 1);
+                    } else {
+                        auto word = static_cast<uint16_t>(currentPixelValue);
+                        uint8_t bytes[2] = {static_cast<uint8_t>(word >> 8), static_cast<uint8_t>(word & 0xFF)};
+                        fileHandle.write(reinterpret_cast<const char*>(bytes), 2);
+                    }
                 }
             }
         }
@@ -111,8 +122,10 @@ void NetpbmImage<IEEE754_t>::writeChannelsToFile(const std::filesystem::path& fi
 
 
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::loadImage(const std::filesystem::path &filepath) {
+
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+NetpbmImage<IEEE754_t, Derived> *NetpbmImage<IEEE754_t, Derived>::loadImage(const std::filesystem::path &filepath) {
+    assert(NetpbmImage::getExpectedChannelsCount().has_value());
     auto parsedHeader = NetpbmHeader::parsing(filepath);
 
     if (!parsedHeader) {
@@ -123,9 +136,12 @@ NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::loadImage(const std::filesystem:
     fileHandle.seekg(parsedHeader->getPositionOfFirstPixel());
 
     auto channels = std::vector<std::vector<IEEE754_t>>();
+    for (auto i = 0; i < NetpbmImage::getExpectedChannelsCount(); i++) {
+        channels.push_back(std::vector<IEEE754_t>());
+    }
 
     auto inputPixelValueCount = 0;
-    auto pixelsPerValue = static_cast<unsigned int>(ceil(log2(static_cast<float>(header->getMaxPixelValue() + 1)) / 8));
+    auto pixelsPerValue = static_cast<unsigned int>(ceil(log2(static_cast<float>(parsedHeader->getMaxPixelValue() + 1)) / 8));
 
     while (true) {
         std::optional<std::string> nextValue;
@@ -140,28 +156,32 @@ NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::loadImage(const std::filesystem:
             auto pixelValue = static_cast<IEEE754_t>(std::stol(nextValue.value()));
             assert(pixelValue >= 0 && pixelValue <= parsedHeader->getMaxPixelValue());
 
-            channels[inputPixelValueCount % this->getExpectedChannelsCount()].push_back(pixelValue);
+            channels[inputPixelValueCount % NetpbmImage::getExpectedChannelsCount().value()].push_back(pixelValue);
             inputPixelValueCount++;
         } else {
             break;
         }
     }
 
-    assert(inputPixelValueCount == parsedHeader->getRows() * parsedHeader->getColumns() * this->getExpectedChannelsCount());
+    assert(inputPixelValueCount == parsedHeader->getRows() * parsedHeader->getColumns() * NetpbmImage::getExpectedChannelsCount().value());
 
     fileHandle.close();
 
     auto outputChannels = std::vector<Channel<IEEE754_t>*>();
-    std::ranges::transform(channels, std::back_inserter(outputChannels), [parsedHeader](std::vector<IEEE754_t> channelValues) {
-        return new Channel<IEEE754_t>(
+    for (size_t i = 0; i < channels.size(); i++) {
+        size_t dataSize = channels[i].size();
+        IEEE754_t* heapData = new IEEE754_t[dataSize];
+        std::copy(channels[i].begin(), channels[i].end(), heapData);
+
+        outputChannels.push_back(new Channel<IEEE754_t>(
             parsedHeader->getMaxPixelValue(),
-            channelValues.data(),
+            heapData,
             parsedHeader->getRows(),
             parsedHeader->getColumns()
-        );
-    });
+        ));
+    }
 
-    return new NetpbmImage(
+    return new Derived(
         parsedHeader->getColumns(),
         parsedHeader->getRows(),
         outputChannels,
@@ -170,23 +190,27 @@ NetpbmImage<IEEE754_t> *NetpbmImage<IEEE754_t>::loadImage(const std::filesystem:
 }
 
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-std::optional<unsigned int> NetpbmImage<IEEE754_t>::getExpectedChannelsCount() {
-    return std::nullopt;
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+std::optional<unsigned int> NetpbmImage<IEEE754_t, Derived>::getExpectedChannelsCount() {
+    return Derived::getExpectedChannelsCount();
 }
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-std::optional<unsigned int> NetpbmImage<IEEE754_t>::getHeaderSpecifier(const ImageChannelsEncoding& forEncoding) {
-    return std::nullopt;
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+std::optional<unsigned int> NetpbmImage<IEEE754_t, Derived>::getHeaderSpecifier(const ImageChannelsEncoding& forEncoding) {
+    return Derived::getHeaderSpecifier(forEncoding);
 }
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-std::optional<std::string> NetpbmImage<IEEE754_t>::getFileExtension() {
-    return std::nullopt;
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+std::optional<std::string> NetpbmImage<IEEE754_t, Derived>::getFileExtension() {
+    return Derived::getFileExtension();
 }
 
-template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-std::optional<unsigned int> NetpbmImage<IEEE754_t>::getMaxChannelValue() {
-    return std::nullopt;
+template<typename IEEE754_t, typename Derived> requires std::is_floating_point_v<IEEE754_t>
+std::optional<unsigned int> NetpbmImage<IEEE754_t, Derived>::getMaxChannelValue() {
+    return Derived::getMaxChannelValue();
 }
 
+
+template class NetpbmImage<float, PPMImage<float>>;
+template class NetpbmImage<double, PPMImage<double>>;
+template class NetpbmImage<long double, PPMImage<long double>>;

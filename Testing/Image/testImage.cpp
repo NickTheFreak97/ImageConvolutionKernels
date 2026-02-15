@@ -123,6 +123,7 @@ TEST(ImageTests, TestImageWriteToFile) {
 
     filteredImage->writeToFile(tempDir / "paw", ImageChannelsEncoding::BINARY);
 
-    auto loadedImage = PPMImage<float>::loadImage(tempDir / "paw.ppm");
+    auto loadedImage = NetpbmImage<float, PPMImage<float>>::loadImage(tempDir / "paw.ppm");
+    EXPECT_EQ(loadedImage->getChannel(0)->at(0, 0), 47);
     std::filesystem::remove_all(tempDir);
 }

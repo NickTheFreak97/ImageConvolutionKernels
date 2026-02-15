@@ -15,9 +15,7 @@ NetpbmHeader::NetpbmHeader(
 }
 
 NetpbmHeader *NetpbmHeader::parsing(const std::filesystem::path &filePath) {
-    auto filename = filePath.filename().string();
-
-    std::ifstream fileHandler(filename.c_str(), std::ios::binary);
+    std::ifstream fileHandler(filePath.string().c_str(), std::ios::binary);
 
     if (!fileHandler.is_open()) {
         return nullptr;

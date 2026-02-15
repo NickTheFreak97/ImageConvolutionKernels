@@ -67,6 +67,8 @@ add_executable(
         Source/Core/Image/ImageFormats/PPM/PPMImage.cpp
         Source/Core/Image/ImageFormats/Header/NetpbmHeader.cpp
         Source/Core/Image/ImageFormats/Header/NetpbmHeader.h
+        Source/Core/Image/ImageFormats/NetpbmImage.cpp
+        Source/Core/Image/ImageFormats/NetpbmImage.h
         Testing/Matrix/testMatrix.cpp
         Testing/Matrix/testMatrixPadding.cpp
         Testing/Image/testConvolutionKernel.cpp

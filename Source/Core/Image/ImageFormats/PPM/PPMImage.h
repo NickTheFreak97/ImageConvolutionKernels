@@ -7,19 +7,23 @@
 
 #include "../../Image.h"
 #include "../Header/NetpbmHeader.h"
+#include "../NetpbmImage.h"
 
 template<typename IEEE754_t> requires std::is_floating_point_v<IEEE754_t>
-class PPMImage : public Image<IEEE754_t> {
-private:
-    std::optional<NetpbmHeader*> header;
+class PPMImage : public NetpbmImage<IEEE754_t, PPMImage<IEEE754_t>> {
+    friend class NetpbmImage<IEEE754_t, PPMImage>;
+protected:
+    [[nodiscard]] static std::optional<unsigned int> getExpectedChannelsCount();
+    [[nodiscard]] static std::optional<unsigned int> getHeaderSpecifier(const ImageChannelsEncoding& forEncoding);
+    [[nodiscard]] static std::optional<std::string> getFileExtension();
+    [[nodiscard]] static std::optional<unsigned int> getMaxChannelValue();
+
 public:
     PPMImage(unsigned int width, unsigned int height, Channel<IEEE754_t>* R, Channel<IEEE754_t>* G, Channel<IEEE754_t>* B, std::optional<NetpbmHeader*> header = std::nullopt);
+    PPMImage* filtered(const ConvolutionKernel<IEEE754_t>* usingKernel, const MatrixPaddingStrategy<IEEE754_t>* withPaddingStrategy) const override;
 
-    PPMImage* filtered(const ConvolutionKernel<IEEE754_t>* usingKernel, const MatrixPaddingStrategy<IEEE754_t>* withPaddingStrategy) const;
-    void writeHeaderToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const;
-    void writeChannelsToFile(const std::filesystem::path& filepath, const ImageChannelsEncoding& encoding) const;
-
-    static PPMImage* loadImage(const std::filesystem::path& filepath);
+protected:
+    PPMImage(unsigned int width, unsigned int height, std::vector<Channel<IEEE754_t>*> channels, std::optional<NetpbmHeader*> header = std::nullopt);
 };
 
 
